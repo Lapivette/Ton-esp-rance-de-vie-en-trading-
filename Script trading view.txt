@@ -9,6 +9,7 @@ atr_length = input.int(14, "Période ATR", minval=1)
 atr_timeframe = input.timeframe("5", "Timeframe ATR")
 risk_divider = input.float(10, "Diviseur de risque", minval=1)
 tp_atr_divider = input.float(2, "Diviseur ATR pour TP", minval=0.5)
+ticks_per_point = input.float(4, "Ticks par point", minval=1)
 
 // ========== CALCULS ==========
 // ATR sur le timeframe choisi
@@ -31,6 +32,7 @@ life_expectancy_minutes = adjusted_life_periods * timeframe_multiplier
 
 // TARGET DYNAMIQUE basée sur ATR
 tp_points_dynamic = atr_value / tp_atr_divider
+tp_ticks = tp_points_dynamic * ticks_per_point
 
 // Gain potentiel en $
 potential_gain = tp_points_dynamic * point_value * contracts
@@ -41,7 +43,7 @@ tp_minutes = tp_periods * timeframe_multiplier
 
 // ========== AFFICHAGE ==========
 // Table en haut à droite
-var table dashboard = table.new(position.top_right, 2, 8, bgcolor=color.new(color.black, 10), border_width=2)
+var table dashboard = table.new(position.top_right, 2, 9, bgcolor=color.new(color.black, 10), border_width=2)
 
 if barstate.islast
     // En-tête
@@ -53,41 +55,44 @@ if barstate.islast
     table.cell(dashboard, 1, 1, str.tostring(atr_value, "#.##") + " pts", 
                text_color=color.yellow, bgcolor=color.new(color.gray, 70))
     
-    // TARGET DYNAMIQUE (ATR/2)
-    table.cell(dashboard, 0, 2, "Target TP", text_color=color.white)
+    // TARGET DYNAMIQUE en points
+    table.cell(dashboard, 0, 2, "Target TP (points)", text_color=color.white)
     table.cell(dashboard, 1, 2, str.tostring(tp_points_dynamic, "#.##") + " pts", 
                text_color=color.lime, bgcolor=color.new(color.gray, 70))
     
+    // TARGET DYNAMIQUE en ticks
+    table.cell(dashboard, 0, 3, "Target TP (ticks)", text_color=color.white)
+    table.cell(dashboard, 1, 3, str.tostring(tp_ticks, "#.##") + " ticks", 
+               text_color=color.lime, bgcolor=color.new(color.gray, 70))
+    
     // Gain potentiel
-    table.cell(dashboard, 0, 3, "Gain potentiel", text_color=color.white)
-    table.cell(dashboard, 1, 3, "$" + str.tostring(potential_gain, "#.##"), 
+    table.cell(dashboard, 0, 4, "Gain potentiel", text_color=color.white)
+    table.cell(dashboard, 1, 4, "$" + str.tostring(potential_gain, "#.##"), 
                text_color=color.lime, bgcolor=color.new(color.gray, 70))
     
     // Espérance de vie AJUSTÉE (en minutes)
     life_color = life_expectancy_minutes > 50 ? color.green : life_expectancy_minutes > 25 ? color.orange : color.red
-    table.cell(dashboard, 0, 4, "Espérance de vie", text_color=color.white)
-    table.cell(dashboard, 1, 4, str.tostring(life_expectancy_minutes, "#.#") + " min", 
+    table.cell(dashboard, 0, 5, "Espérance de vie", text_color=color.white)
+    table.cell(dashboard, 1, 5, str.tostring(life_expectancy_minutes, "#.#") + " min", 
                text_color=life_color, bgcolor=color.new(color.gray, 70))
     
     // Temps pour TP (en minutes)
     tp_color = tp_minutes < life_expectancy_minutes ? color.green : color.red
-    table.cell(dashboard, 0, 5, "Temps pour TP", text_color=color.white)
-    table.cell(dashboard, 1, 5, str.tostring(tp_minutes, "#.#") + " min", 
+    table.cell(dashboard, 0, 6, "Temps pour TP", text_color=color.white)
+    table.cell(dashboard, 1, 6, str.tostring(tp_minutes, "#.#") + " min", 
                text_color=tp_color, bgcolor=color.new(color.gray, 70))
     
     // Ratio Temps TP / Espérance ajustée
     ratio = tp_periods / adjusted_life_periods
     ratio_color = ratio < 0.5 ? color.green : ratio < 0.8 ? color.orange : color.red
-    table.cell(dashboard, 0, 6, "Ratio TP/Vie", text_color=color.white)
-    table.cell(dashboard, 1, 6, str.tostring(ratio * 100, "#.#") + "%", 
+    table.cell(dashboard, 0, 7, "Ratio TP/Vie", text_color=color.white)
+    table.cell(dashboard, 1, 7, str.tostring(ratio * 100, "#.#") + "%", 
                text_color=ratio_color, bgcolor=color.new(color.gray, 70))
     
     // DD max en points
-    table.cell(dashboard, 0, 7, "DD Max", text_color=color.white)
-    table.cell(dashboard, 1, 7, str.tostring(dd_max_points, "#") + " pts", 
+    table.cell(dashboard, 0, 8, "DD Max", text_color=color.white)
+    table.cell(dashboard, 1, 8, str.tostring(dd_max_points, "#") + " pts", 
                text_color=color.white, bgcolor=color.new(color.gray, 70))
 
 // Plot ATR pour référence
 plot(atr_value, "ATR", color=color.blue, linewidth=2)
-
-
