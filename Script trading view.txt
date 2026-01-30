@@ -1,0 +1,93 @@
+//@version=5
+indicator("Espérance de Vie Trading - ATR", overlay=true)
+
+// ========== PARAMÈTRES ==========
+capital = input.float(2000, "Capital ($)", minval=100)
+point_value = input.float(20, "Valeur par point ($)", minval=1)
+contracts = input.int(1, "Nombre de contrats", minval=1)
+atr_length = input.int(14, "Période ATR", minval=1)
+atr_timeframe = input.timeframe("5", "Timeframe ATR")
+risk_divider = input.float(10, "Diviseur de risque", minval=1)
+tp_atr_divider = input.float(2, "Diviseur ATR pour TP", minval=0.5)
+
+// ========== CALCULS ==========
+// ATR sur le timeframe choisi
+atr_value = request.security(syminfo.tickerid, atr_timeframe, ta.atr(atr_length))
+
+// DD maximum en points
+dd_max_points = capital / (point_value * contracts)
+
+// Espérance de vie en PÉRIODES (nombre de bougies de 5min)
+life_expectancy_periods = dd_max_points / atr_value
+
+// Espérance de vie AJUSTÉE (divisée par 10 pour réduire le risque)
+adjusted_life_periods = life_expectancy_periods / risk_divider
+
+// Déterminer le multiplicateur selon le timeframe
+timeframe_multiplier = atr_timeframe == "1" ? 1 : atr_timeframe == "3" ? 3 : atr_timeframe == "5" ? 5 : atr_timeframe == "15" ? 15 : atr_timeframe == "30" ? 30 : atr_timeframe == "60" ? 60 : 5
+
+// Conversion en minutes
+life_expectancy_minutes = adjusted_life_periods * timeframe_multiplier
+
+// TARGET DYNAMIQUE basée sur ATR
+tp_points_dynamic = atr_value / tp_atr_divider
+
+// Gain potentiel en $
+potential_gain = tp_points_dynamic * point_value * contracts
+
+// Temps pour TP en périodes et en minutes
+tp_periods = tp_points_dynamic / atr_value
+tp_minutes = tp_periods * timeframe_multiplier
+
+// ========== AFFICHAGE ==========
+// Table en haut à droite
+var table dashboard = table.new(position.top_right, 2, 8, bgcolor=color.new(color.black, 10), border_width=2)
+
+if barstate.islast
+    // En-tête
+    table.cell(dashboard, 0, 0, "Métrique", text_color=color.white, bgcolor=color.new(color.blue, 30))
+    table.cell(dashboard, 1, 0, "Valeur", text_color=color.white, bgcolor=color.new(color.blue, 30))
+    
+    // ATR actuel
+    table.cell(dashboard, 0, 1, "ATR " + atr_timeframe, text_color=color.white)
+    table.cell(dashboard, 1, 1, str.tostring(atr_value, "#.##") + " pts", 
+               text_color=color.yellow, bgcolor=color.new(color.gray, 70))
+    
+    // TARGET DYNAMIQUE (ATR/2)
+    table.cell(dashboard, 0, 2, "Target TP", text_color=color.white)
+    table.cell(dashboard, 1, 2, str.tostring(tp_points_dynamic, "#.##") + " pts", 
+               text_color=color.lime, bgcolor=color.new(color.gray, 70))
+    
+    // Gain potentiel
+    table.cell(dashboard, 0, 3, "Gain potentiel", text_color=color.white)
+    table.cell(dashboard, 1, 3, "$" + str.tostring(potential_gain, "#.##"), 
+               text_color=color.lime, bgcolor=color.new(color.gray, 70))
+    
+    // Espérance de vie AJUSTÉE (en minutes)
+    life_color = life_expectancy_minutes > 50 ? color.green : life_expectancy_minutes > 25 ? color.orange : color.red
+    table.cell(dashboard, 0, 4, "Espérance de vie", text_color=color.white)
+    table.cell(dashboard, 1, 4, str.tostring(life_expectancy_minutes, "#.#") + " min", 
+               text_color=life_color, bgcolor=color.new(color.gray, 70))
+    
+    // Temps pour TP (en minutes)
+    tp_color = tp_minutes < life_expectancy_minutes ? color.green : color.red
+    table.cell(dashboard, 0, 5, "Temps pour TP", text_color=color.white)
+    table.cell(dashboard, 1, 5, str.tostring(tp_minutes, "#.#") + " min", 
+               text_color=tp_color, bgcolor=color.new(color.gray, 70))
+    
+    // Ratio Temps TP / Espérance ajustée
+    ratio = tp_periods / adjusted_life_periods
+    ratio_color = ratio < 0.5 ? color.green : ratio < 0.8 ? color.orange : color.red
+    table.cell(dashboard, 0, 6, "Ratio TP/Vie", text_color=color.white)
+    table.cell(dashboard, 1, 6, str.tostring(ratio * 100, "#.#") + "%", 
+               text_color=ratio_color, bgcolor=color.new(color.gray, 70))
+    
+    // DD max en points
+    table.cell(dashboard, 0, 7, "DD Max", text_color=color.white)
+    table.cell(dashboard, 1, 7, str.tostring(dd_max_points, "#") + " pts", 
+               text_color=color.white, bgcolor=color.new(color.gray, 70))
+
+// Plot ATR pour référence
+plot(atr_value, "ATR", color=color.blue, linewidth=2)
+
+
