@@ -19,7 +19,6 @@ En utilisant l'**ATR (Average True Range)** comme mesure de volatilité, cet out
 - 🎯 **Target TP automatique** calculée depuis l'ATR (par défaut ATR/2)
 - 💰 **Gain potentiel** estimé en dollars
 - 📊 **Ratio TP/Vie** avec code couleur pour évaluer la qualité du setup
-- 🚨 **Alertes intelligentes** pour les conditions de trading défavorables
 - 🌍 **Compatible avec tous les actifs** (Futures, Forex, Crypto, Actions)
 
 ## 🖼️ Aperçu
@@ -91,14 +90,6 @@ Regardez le **Ratio TP/Vie** :
 - ✅ **Ratio < 30%** : Setup optimal, prenez le trade !
 - ⚠️ **Ratio 50-80%** : Acceptable mais surveillez
 - 🚫 **Ratio > 80%** : Évitez, trop risqué
-
-### 3. Utiliser les alertes
-
-L'indicateur propose 3 alertes automatiques :
-
-- ⚠️ Espérance de vie < 5 périodes (volatilité trop élevée)
-- ⚠️ Ratio TP/Vie > 80% (setup défavorable)
-- ✅ Ratio < 30% (conditions optimales)
 
 ## 💡 Exemples pratiques
 
@@ -176,23 +167,6 @@ Indicateur de qualité du setup : plus le ratio est faible, plus vous avez de ma
 - Les performances passées ne garantissent pas les résultats futurs
 - Ajustez toujours les paramètres selon votre profil de risque
 - Ne tradez jamais avec de l'argent que vous ne pouvez pas vous permettre de perdre
-
-## 🤝 Contribution
-
-Les contributions sont les bienvenues ! N'hésitez pas à :
-
-- 🐛 Reporter des bugs
-- 💡 Proposer des nouvelles fonctionnalités
-- 📖 Améliorer la documentation
-- ⭐ Donner une étoile si vous trouvez ce projet utile
-
-## 📄 License
-
-Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
-## 📧 Contact
-
-Pour toute question ou suggestion, n'hésitez pas à ouvrir une issue sur GitHub.
 
 ## 🙏 Remerciements
 
